@@ -1,0 +1,7 @@
+﻿.venv/
+venv_gpu/
+__pycache__/
+*.pkl
+medical_rag_store.pkl
+.vscode/
+*.json
