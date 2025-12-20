@@ -1,0 +1,146 @@
+import json
+import os
+import time
+from langchain_chroma import Chroma
+from langchain_ollama import OllamaEmbeddings
+from langchain_core.documents import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter  # 新增這個切菜機
+from tqdm import tqdm
+
+# ================= 設定區 =================
+# 你的 Windows IP (根據你剛剛 curl 成功的結果)
+OLLAMA_URL = "http://172.18.112.1:11434"
+
+DATA_FILES = ["health.json", "medical.json"]
+DB_PATH = "./chroma_db"
+BATCH_SIZE = 500  # 批次大小
+# =========================================
+
+def main():
+    print(f"目標 Ollama IP: {OLLAMA_URL}")
+    
+    # --- 1. 讀取數據 ---
+
+    # --- 1. 讀取數據 ---
+    raw_data = []
+
+    for file in DATA_FILES:
+        if not os.path.exists(file):
+            print(f"⚠️ 找不到檔案 {file}，跳過")
+            continue
+
+        with open(file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        print(f"📄 載入 {file}，共 {len(data)} 筆")
+
+        # 幫每一筆資料加上來源
+        for d in data:
+            d["source"] = file
+            raw_data.append(d)
+
+    total_records = len(raw_data)
+    print(f"✅ 總共合併 {total_records} 筆數據")
+
+
+
+
+    # --- 2. 初始化工具 ---
+    #text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+    
+    embeddings = OllamaEmbeddings(
+        model="nomic-embed-text",
+        base_url=OLLAMA_URL
+    )
+
+    vectorstore = Chroma(
+        persist_directory=DB_PATH,
+        embedding_function=embeddings,
+        collection_name="medical_rag"
+    )
+
+    text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=800,
+    chunk_overlap=100
+    )
+
+    # --- 3. 讀取進度紀錄 (斷點續傳邏輯) ---
+    CHECKPOINT_FILE = "checkpoint_index.txt"
+    start_index = 0
+    
+    if os.path.exists(CHECKPOINT_FILE):
+        with open(CHECKPOINT_FILE, "r") as f:
+            try:
+                start_index = int(f.read().strip())
+                print(f"📌 發現上次進度，將從第 {start_index} 筆開始繼續處理...")
+            except ValueError:
+                start_index = 0
+    
+    # 如果已經全部跑完
+    if start_index >= total_records:
+        print("✅ 所有數據已處理完畢！")
+        return
+
+    print(f"開始處理向量化...")
+
+    batch_docs = []
+    
+    # --- 4. 主迴圈 (加入 tqdm 進度條) ---
+    # initial=start_index 讓進度條顯示正確的百分比
+    for i, item in tqdm(enumerate(raw_data), total=total_records, initial=start_index, desc="Processing"):
+        
+        # [關鍵] 跳過已經處理過的資料
+        if i < start_index:
+            continue
+
+        q = item.get('question', '')
+        a = item.get('answer', '')
+        content = f"問題: {q}\n回答: {a}"
+        
+        original_doc = Document(
+            page_content=content, 
+            metadata={
+                "source": item.get("source", "merged_json"),
+                "id": str(i),
+                "original_q": q
+            }
+        )
+
+        splits = [original_doc]
+        if len(content) < 800:   # 短文本：直接用
+            batch_docs.append(original_doc)
+        else:                    # 長文本：切 chunk
+            splits = text_splitter.split_documents([original_doc])
+            batch_docs.extend(splits)
+
+
+        # 累積滿 BATCH_SIZE 就寫入
+        if len(batch_docs) >= BATCH_SIZE:
+            try:
+                vectorstore.add_documents(batch_docs)
+                batch_docs = [] # 清空
+                
+                # [關鍵] 寫入成功後，立刻更新進度檔
+                # 紀錄 i + 1，代表下次從下一筆開始
+                with open(CHECKPOINT_FILE, "w") as f:
+                    f.write(str(i + 1))
+                    
+            except Exception as e:
+                print(f"\n[警告] 寫入失敗: {e}")
+                # 這裡不更新進度檔，下次重跑會重試這批
+
+    # --- 5. 處理剩下的尾數 ---
+    if batch_docs:
+        try:
+            vectorstore.add_documents(batch_docs)
+            with open(CHECKPOINT_FILE, "w") as f:
+                f.write(str(total_records))
+        except Exception as e:
+            print(f"\n[警告] 最後一批寫入失敗: {e}")
+
+    print("\n==============================")
+    print("🎉 資料庫建立/更新完畢！")
+    print(f"資料已存入 {DB_PATH}")
+
+if __name__ == "__main__":
+    main()
