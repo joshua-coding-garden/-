@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG 智能問答系統</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>📊 RAG 系統</h2>
+                <button class="log-btn"> >_ 查看系統日誌</button>
+            </div>
+            
+            <div class="system-status">
+                <div class="status-item">
+                    <span class="label">系統狀態:</span>
+                    <span class="value online">● 已連線</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">檢索方法:</span>
+                    <span class="value">KNN / Cosine</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">模型:</span>
+                    <span class="value">qwen2.5:14b</span>
+                </div>
+            </div>
+
+            <button id="clear-history-btn" class="danger-btn">🗑️ 清除對話歷史</button>
+        </aside>
+
+        <main class="chat-area">
+            <header class="chat-header">
+                <h1>💬 RAG 智能問答系統</h1>
+                <p>基於本地知識庫的智能問答 - 對話介面</p>
+            </header>
+
+            <div id="chat-box" class="chat-box">
+                <div class="message bot-message">
+                    <div class="bubble">
+                        您好！我是您的 AI 健康助理。請輸入您的問題，我將檢索資料庫為您解答。
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="user-input" placeholder="輸入您的營養或醫療相關問題..." autocomplete="off">
+                <button id="send-btn">➤</button>
+            </div>
+        </main>
+    </div>
+
+    <div id="source-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>來源詳情 (Similarity Context)</h3>
+                <span class="close-btn">&times;</span>
+            </div>
+            <div id="modal-body" class="modal-body">
+                </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>

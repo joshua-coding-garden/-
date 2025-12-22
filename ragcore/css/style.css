@@ -1,0 +1,229 @@
+:root {
+    --sidebar-bg: #2b3245; /* 深藍色背景 */
+    --main-bg: #f4f6f9;
+    --primary-color: #3b82f6;
+    --accent-color: #10b981; /* 相似度高分的綠色 */
+    --text-color: #333;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+}
+
+/* 佈局容器 */
+.app-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* 左側側邊欄 */
+.sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    color: white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.sidebar-header h2 { margin: 0; font-size: 1.2rem; }
+.log-btn {
+    background: #3e4a61;
+    border: none;
+    color: #cbd5e1;
+    padding: 8px 12px;
+    width: 100%;
+    text-align: left;
+    margin-top: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.system-status {
+    margin-top: auto; /* 推到底部 */
+    font-size: 0.9rem;
+    color: #94a3b8;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #3e4a61;
+    padding-bottom: 5px;
+}
+
+.value.online { color: #10b981; }
+.danger-btn {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* 右側主區域 */
+.chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--main-bg);
+}
+
+.chat-header {
+    background: white;
+    padding: 15px 30px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: center;
+}
+.chat-header h1 { margin: 0; font-size: 1.5rem; color: #1e293b; }
+.chat-header p { margin: 5px 0 0; color: #64748b; font-size: 0.9rem; }
+
+/* 聊天框 */
+.chat-box {
+    flex: 1;
+    padding: 20px 40px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.message { display: flex; width: 100%; }
+.user-message { justify-content: flex-end; }
+.bot-message { justify-content: flex-start; }
+
+.bubble {
+    max-width: 70%;
+    padding: 15px 20px;
+    border-radius: 12px;
+    line-height: 1.6;
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.user-message .bubble {
+    background-color: var(--primary-color);
+    color: white;
+    border-bottom-right-radius: 2px;
+}
+
+.bot-message .bubble {
+    background-color: white;
+    color: var(--text-color);
+    border-bottom-left-radius: 2px;
+}
+
+/* 引用來源按鈕區 */
+.source-links {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #e2e8f0;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.source-tag {
+    background-color: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.source-tag:hover { background-color: #dbeafe; }
+
+/* 輸入區 */
+.input-area {
+    padding: 20px;
+    background: white;
+    display: flex;
+    gap: 10px;
+    border-top: 1px solid #e2e8f0;
+}
+#user-input {
+    flex: 1;
+    padding: 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 25px;
+    font-size: 1rem;
+    outline: none;
+}
+#user-input:focus { border-color: var(--primary-color); }
+#send-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+/* Modal 彈窗樣式 */
+.hidden { display: none !important; }
+
+.modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    width: 60%;
+    max-width: 800px;
+    max-height: 80vh;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.close-btn { font-size: 1.5rem; cursor: pointer; color: #64748b; }
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.source-item {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    border-left: 4px solid var(--accent-color);
+}
+
+.score-badge {
+    display: inline-block;
+    background-color: var(--accent-color);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+}
